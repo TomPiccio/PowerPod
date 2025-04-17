@@ -250,15 +250,20 @@ class SignupWidgetState extends State<SignupWidget> {
                                         controller: contactController,
                                         keyboardType: TextInputType.phone,
                                         decoration: InputDecoration(
+                                          prefixIconConstraints: BoxConstraints(
+                                            minWidth: 0,
+                                            minHeight: 0,
+                                          ),
                                           prefixIcon: Padding(
-                                            padding: const EdgeInsets.symmetric(
-                                              horizontal: 8.0,
+                                            padding: const EdgeInsets.only(
+                                              left: 12,
+                                              right: 8,
                                             ),
-                                            child: Align(
-                                              alignment: Alignment.centerLeft,
-                                              child: Text(
-                                                '🇸🇬 +65', // Using Singapore flag emoji as prefix
-                                                style: TextStyle(fontSize: 16),
+                                            child: Text(
+                                              '🇸🇬 +65',
+                                              style: TextStyle(
+                                                fontSize: 16,
+                                                color: Colors.black,
                                               ),
                                             ),
                                           ),
@@ -267,10 +272,11 @@ class SignupWidgetState extends State<SignupWidget> {
                                           filled: true,
                                           fillColor: Colors.white,
                                         ),
+                                        style: TextStyle(color: Colors.black),
                                         validator: (value) {
                                           final pattern = RegExp(
                                             r'^[689]\d{7}$',
-                                          ); // SG number validation
+                                          );
                                           if (value == null || value.isEmpty) {
                                             return 'Contact number is required';
                                           }
@@ -373,95 +379,6 @@ class SignupWidgetState extends State<SignupWidget> {
                                   style: TextStyle(color: Colors.red),
                                 )
                                 : SizedBox.shrink(),
-
-                            Container(
-                              decoration: BoxDecoration(
-                                color: Color.fromRGBO(255, 255, 255, 1),
-                              ),
-                              padding: EdgeInsets.symmetric(
-                                horizontal: 0,
-                                vertical: 0,
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-
-                                children: <Widget>[
-                                  Text(
-                                    'Don’t Have an account?',
-                                    textAlign: TextAlign.left,
-                                    style: TextStyle(
-                                      color: Color.fromRGBO(30, 30, 30, 1),
-                                      fontFamily: 'Inter',
-                                      fontSize: 16,
-                                      letterSpacing:
-                                          0 /*percentages not used in flutter. defaulting to zero*/,
-                                      fontWeight: FontWeight.normal,
-                                      height: 1.5 /*PERCENT not supported*/,
-                                    ),
-                                  ),
-                                  SizedBox(width: 10),
-                                  Container(
-                                    decoration: BoxDecoration(),
-                                    padding: EdgeInsets.symmetric(
-                                      horizontal: 0,
-                                      vertical: 0,
-                                    ),
-                                    child: Row(
-                                      mainAxisSize: MainAxisSize.min,
-
-                                      children: <Widget>[
-                                        Text(
-                                          'Sign Up',
-                                          textAlign: TextAlign.left,
-                                          style: TextStyle(
-                                            color: Color.fromRGBO(
-                                              0,
-                                              153,
-                                              81,
-                                              1,
-                                            ),
-                                            fontFamily: 'Inter',
-                                            fontSize: 16,
-                                            letterSpacing:
-                                                0 /*percentages not used in flutter. defaulting to zero*/,
-                                            fontWeight: FontWeight.normal,
-                                            height:
-                                                1.5 /*PERCENT not supported*/,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            SizedBox(height: 24),
-                            Container(
-                              decoration: BoxDecoration(),
-                              padding: EdgeInsets.symmetric(
-                                horizontal: 0,
-                                vertical: 0,
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-
-                                children: <Widget>[
-                                  Text(
-                                    'Forgot password?',
-                                    textAlign: TextAlign.center,
-                                    style: TextStyle(
-                                      color: Color.fromRGBO(0, 153, 81, 1),
-                                      fontFamily: 'Inter',
-                                      fontSize: 16,
-                                      letterSpacing:
-                                          0 /*percentages not used in flutter. defaulting to zero*/,
-                                      fontWeight: FontWeight.normal,
-                                      height: 1.5 /*PERCENT not supported*/,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
                           ],
                         ),
                       ),
