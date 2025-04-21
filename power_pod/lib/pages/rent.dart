@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:intl/intl.dart';
 import 'package:power_pod/pages/home.dart';
 import 'package:power_pod/pages/loading.dart';
 import 'package:power_pod/widgets/logo_header.dart';
@@ -25,6 +26,89 @@ class RentInstructionPageState extends State<RentInstructionPage> {
   final PageController _controller = PageController();
   int _currentPage = 0;
   final int _totalPages = 3;
+
+  Future<void> uploadUserDetailsRent(int podNumber) async {
+    final user = FirebaseAuth.instance.currentUser;
+    final userUid = FirebaseAuth.instance.currentUser?.uid;
+
+    if (user == null) {
+      print("User not logged in");
+      return;
+    }
+
+    try {
+      // Get Firestore user document
+      final docSnapshot =
+          await FirebaseFirestore.instance
+              .collection('users')
+              .doc(user.uid)
+              .get();
+
+      if (!docSnapshot.exists) {
+        print("User document does not exist in Firestore");
+        return;
+      }
+
+      final data = docSnapshot.data();
+
+      if (data == null || !data.containsKey('email')) {
+        print("Email not found in Firestore");
+        return;
+      }
+
+      final email = data['email'];
+
+      if (!data.containsKey('contact')) {
+        print("Contact number not found in Firestore");
+        return;
+      }
+
+      final contactNumber = data['contact'];
+
+      // Upload to Realtime Database
+      await FirebaseDatabase.instance
+          .ref('pod_$podNumber/renter_email')
+          .set(email);
+
+      await FirebaseDatabase.instance
+          .ref('pod_$podNumber/renter_contact_number')
+          .set(contactNumber);
+
+      final currentTime = DateTime.now();
+      final returnByTime = currentTime.add(Duration(hours: 24));
+
+      // Format to 'yyyy-MM-dd HH:mm:ss'
+      final dateFormat = DateFormat('yyyy-MM-dd HH:mm:ss');
+      final formattedReturnByTime = dateFormat.format(returnByTime);
+
+      await FirebaseDatabase.instance
+          .ref('pod_$podNumber/return_by')
+          .set(formattedReturnByTime);
+
+      await FirebaseDatabase.instance
+          .ref('pod_$podNumber/renter_user_id')
+          .set(userUid);
+
+      print("Rental Success: email = $email, contact = $contactNumber");
+    } catch (e) {
+      print("Error: $e");
+    }
+  }
+
+  Future<void> clearUserDetailsRent(int podNumber) async {
+    try {
+      final dbRef = FirebaseDatabase.instance.ref('pod_$podNumber');
+
+      await dbRef.child('renter_email').set(null);
+      await dbRef.child('renter_contact_number').set(null);
+      await dbRef.child('return_by').set(null);
+      await dbRef.child('renter_user_id').set(null);
+
+      print("Rental info cleared for pod $podNumber");
+    } catch (e) {
+      print("Error clearing rental info: $e");
+    }
+  }
 
   @override
   void initState() {
@@ -51,7 +135,7 @@ class RentInstructionPageState extends State<RentInstructionPage> {
           child: Padding(
             padding: EdgeInsets.all(16),
             child: Container(
-              width: 400,
+              width: 320,
               height: 800,
               decoration: BoxDecoration(
                 color: Color.fromRGBO(255, 255, 255, 1),
@@ -61,7 +145,7 @@ class RentInstructionPageState extends State<RentInstructionPage> {
                   child: Column(
                     children: [
                       Container(
-                        width: 360,
+                        width: 320,
                         height: 650,
                         clipBehavior: Clip.antiAlias,
                         decoration: BoxDecoration(
@@ -74,7 +158,7 @@ class RentInstructionPageState extends State<RentInstructionPage> {
                               top: 75,
                               child: SingleChildScrollView(
                                 child: Container(
-                                  width: 360,
+                                  width: 320,
                                   padding: EdgeInsets.symmetric(
                                     horizontal: 13,
                                     vertical: 13,
@@ -109,6 +193,8 @@ class RentInstructionPageState extends State<RentInstructionPage> {
                                               _currentPage = index;
                                             });
                                           },
+                                          physics:
+                                              NeverScrollableScrollPhysics(),
                                           children: [
                                             Container(
                                               width: 300,
@@ -388,6 +474,15 @@ class RentInstructionPageState extends State<RentInstructionPage> {
                                                       if (_currentPage ==
                                                           _totalPages - 1) {
                                                         // If this is the last page, go to home page
+                                                        if (widget.to_rent) {
+                                                          await uploadUserDetailsRent(
+                                                            widget.podNumber,
+                                                          );
+                                                        } else {
+                                                          await clearUserDetailsRent(
+                                                            widget.podNumber,
+                                                          );
+                                                        }
                                                         Navigator.pushReplacement(
                                                           context,
                                                           MaterialPageRoute(
@@ -477,7 +572,9 @@ class RentInstructionPageState extends State<RentInstructionPage> {
                                                         children: [
                                                           Text(
                                                             _currentPage == 0
-                                                                ? 'Rent Now!'
+                                                                ? widget.to_rent
+                                                                    ? 'Rent Now!'
+                                                                    : 'Return'
                                                                 : _currentPage ==
                                                                     1
                                                                 ? 'Done'

@@ -230,7 +230,7 @@ class _HomeState extends State<Home> {
           child: Padding(
             padding: EdgeInsets.all(16),
             child: Container(
-              width: 400,
+              width: 320,
               height: 800,
               decoration: BoxDecoration(
                 color: Color.fromRGBO(255, 255, 255, 1),
@@ -240,7 +240,7 @@ class _HomeState extends State<Home> {
                   child: Column(
                     children: [
                       Container(
-                        width: 360,
+                        width: 320,
                         height: 650,
                         clipBehavior: Clip.antiAlias,
                         decoration: BoxDecoration(
@@ -255,7 +255,7 @@ class _HomeState extends State<Home> {
                                 // Wrap with SingleChildScrollView to avoid overflow
                                 child: Container(
                                   width:
-                                      360, // Set width to match parent container
+                                      320, // Set width to match parent container
                                   padding: const EdgeInsets.symmetric(
                                     horizontal: 13,
                                     vertical: 13,
@@ -542,7 +542,7 @@ class _HomeState extends State<Home> {
                                           ],
                                         ),
                                       ),
-                                      SizedBox(height: 10),
+                                      SizedBox(height: 20),
                                       Container(
                                         width: double.infinity,
                                         padding: const EdgeInsets.symmetric(
@@ -753,8 +753,7 @@ class _HomeState extends State<Home> {
                                           ],
                                         ),
                                       ),
-                                      SizedBox(height: 10),
-                                      SizedBox(height: 10),
+                                      SizedBox(height: 20),
                                       Container(
                                         width: double.infinity,
                                         padding: const EdgeInsets.symmetric(
@@ -966,7 +965,7 @@ class _HomeState extends State<Home> {
                                         ),
                                       ),
                                       SizedBox(height: 10),
-                                      SizedBox(height: 10),
+                                      /*
                                       Container(
                                         width: double.infinity,
                                         padding: const EdgeInsets.symmetric(
@@ -1176,7 +1175,7 @@ class _HomeState extends State<Home> {
                                             ),
                                           ],
                                         ),
-                                      ),
+                                      ),*/
                                     ],
                                   ),
                                 ),

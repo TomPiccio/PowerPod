@@ -4,7 +4,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../services/auth_Service.dart';
 import '../pages/signup.dart';
-import '../pages/rent.dart';
 
 class LoginWidget extends StatefulWidget {
   @override
@@ -80,11 +79,14 @@ class _LoginWidgetState extends State<LoginWidget> {
                             height: 74,
                             decoration: BoxDecoration(
                               image: DecorationImage(
-                                image: AssetImage('assets/images/Powerpod.png'),
-                                fit: BoxFit.fitWidth,
+                                image: AssetImage(
+                                  'assets/images/PowerPod_Logo.png',
+                                ),
+                                fit: BoxFit.cover,
                               ),
                             ),
                           ),
+
                           SizedBox(height: 8), // Spacing between text & image
                           FittedBox(
                             fit: BoxFit.scaleDown,

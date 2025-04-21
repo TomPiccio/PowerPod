@@ -1,33 +1,55 @@
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:power_pod/widgets/logo_header.dart';
+import 'package:firebase_database/firebase_database.dart';
+import 'package:flutter/material.dart';
+import 'package:power_pod/widgets/logo_header.dart';
 
-class LoadingPage extends StatelessWidget {
+class LoadingPage extends StatefulWidget {
   final String podNum;
   final bool to_open;
 
   const LoadingPage({required this.podNum, required this.to_open});
 
   @override
-  Widget build(BuildContext context) {
-    // Listen to Firebase value change
-    FirebaseDatabase.instance.ref('pod_$podNum').onValue.listen((event) {
+  State<LoadingPage> createState() => _LoadingPageState();
+}
+
+class _LoadingPageState extends State<LoadingPage> {
+  String? errorMsg;
+
+  @override
+  void initState() {
+    super.initState();
+
+    FirebaseDatabase.instance.ref('pod_${widget.podNum}').onValue.listen((
+      event,
+    ) {
       final data = event.snapshot.value as Map?;
-      if (data != null &&
-          data['request_to_open'] == false &&
-          data['request_to_close'] == false) {
-        Navigator.pop(context); // Pop the loading page when both are false
+      if (data != null) {
+        if (data['request_to_open'] == false &&
+            data['request_to_close'] == false) {
+          Navigator.pop(context); // Close the loading page
+        }
+
+        // Update error message
+        setState(() {
+          errorMsg = data['error_msg'];
+        });
       }
     });
+  }
 
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white, // Optional: Set background color
+      backgroundColor: Colors.white,
       body: SingleChildScrollView(
         child: Center(
           child: Padding(
             padding: EdgeInsets.all(16),
             child: Container(
-              width: 400,
+              width: 320,
               height: 800,
               decoration: BoxDecoration(
                 color: Color.fromRGBO(255, 255, 255, 1),
@@ -35,7 +57,7 @@ class LoadingPage extends StatelessWidget {
               child: SingleChildScrollView(
                 child: Center(
                   child: Container(
-                    width: 360,
+                    width: 320,
                     height: 650,
                     clipBehavior: Clip.antiAlias,
                     decoration: BoxDecoration(color: const Color(0xFFF7FEFB)),
@@ -49,7 +71,7 @@ class LoadingPage extends StatelessWidget {
                               LoadingIndicator(),
                               const SizedBox(height: 16),
                               Text(
-                                '${to_open ? "Opening" : "Closing"} Pod $podNum...',
+                                '${widget.to_open ? "Opening" : "Closing"} Pod ${widget.podNum}...',
                                 style: TextStyle(
                                   fontFamily: 'Inter',
                                   fontSize: 18,
@@ -57,6 +79,27 @@ class LoadingPage extends StatelessWidget {
                                   color: Colors.black,
                                 ),
                               ),
+                              const SizedBox(height: 16),
+                              if (errorMsg != null)
+                                Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Image.asset(
+                                      'assets/images/warning.png',
+                                      width: 24,
+                                      height: 24,
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Text(
+                                      errorMsg!,
+                                      style: const TextStyle(
+                                        color: Colors.red,
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                  ],
+                                ),
                             ],
                           ),
                         ),

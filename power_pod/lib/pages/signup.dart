@@ -97,7 +97,9 @@ class SignupWidgetState extends State<SignupWidget> {
                             height: 74,
                             decoration: BoxDecoration(
                               image: DecorationImage(
-                                image: AssetImage('assets/images/Powerpod.png'),
+                                image: AssetImage(
+                                  'assets/images/PowerPod_Logo.png',
+                                ),
                                 fit: BoxFit.fitWidth,
                               ),
                             ),

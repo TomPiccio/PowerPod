@@ -10,7 +10,7 @@ class LogoHeader extends StatelessWidget {
       left: 0,
       top: 0,
       child: Container(
-        width: 360,
+        width: 320,
         height: 83,
         decoration: BoxDecoration(color: const Color(0xFFF1FDF9)),
         child: Column(
@@ -47,7 +47,7 @@ class LogoHeader extends StatelessWidget {
                     height: 60, // Adjust the height to fit the image size
                     decoration: BoxDecoration(
                       image: DecorationImage(
-                        image: AssetImage('assets/images/Powerpod.png'),
+                        image: AssetImage('assets/images/PowerPod_Logo.png'),
                         fit:
                             BoxFit
                                 .scaleDown, // Fits without scaling up (avoids distortion)
