@@ -31,7 +31,7 @@ int motorStepCount = 0;                   // (Optional)
 
 // Timing intervals for step pulse generation (in microseconds)
 unsigned long motorLastChangeMicros = 0;
-const unsigned long motorStepInterval = 1000;      // Time between steps (adjust as needed)
+const unsigned long motorStepInterval = 2000;      // Time between steps (adjust as needed)
 const unsigned long motorPulseHighDuration = 50;     // Duration the pulse stays HIGH
 bool motorPulseState = false;                        // Tracks step pulse state
 
@@ -45,7 +45,7 @@ MotorDirection currentDirection = ANTICLOCKWISE; // Start spinning anticlockwise
 
 // Variable for limit switch edge detection, analog based
 bool previousLimitPressed = false;
-
+bool sensor1Available,sensor2Available,sensor3Available;
 void setup(void)
 {
   Serial.begin(115200);
@@ -53,18 +53,22 @@ void setup(void)
   // ----- Initialize INA219 Sensors -----
   Serial.println("Initializing three INA219 sensors...");
 
-  if (!ina219_1.begin()) {
-    Serial.println("Failed to find INA219 chip at 0x41");
-    while (1) { delay(10); }
-  }
-  if (!ina219_2.begin()) {
-    Serial.println("Failed to find INA219 chip at 0x44");
-    while (1) { delay(10); }
-  }
-  if (!ina219_3.begin()) {
-    Serial.println("Failed to find INA219 chip at 0x45");
-    while (1) { delay(10); }
-  }
+  sensor1Available = ina219_1.begin();
+  if (!sensor1Available) Serial.println("INA219_1 (0x41) not found.");
+
+  sensor2Available = ina219_2.begin();
+  if (!sensor2Available) Serial.println("INA219_2 (0x44) not found.");
+
+  sensor3Available = ina219_3.begin();
+  if (!sensor3Available) Serial.println("INA219_3 (0x45) not found.");
+
+  // Only set calibration for sensors that are available
+  if (sensor1Available) ina219_1.setCalibration_32V_1A();
+  if (sensor2Available) ina219_2.setCalibration_32V_1A();
+  if (sensor3Available) ina219_3.setCalibration_32V_1A();
+
+  Serial.println("Sensor initialization complete.");
+
   
   // Optionally configure each sensor's calibration range.
   ina219_1.setCalibration_32V_1A();
@@ -129,59 +133,59 @@ void loop(void)
   if (currentMillis - previousSensorMillis >= 1000) {
     previousSensorMillis = currentMillis;
 
-    // INA219 #1 readings
-    float shuntvoltage_1 = ina219_1.getShuntVoltage_mV();
-    float busvoltage_1   = ina219_1.getBusVoltage_V();
-    float current_mA_1   = ina219_1.getCurrent_mA();
-    float power_mW_1     = ina219_1.getPower_mW();
-    float loadvoltage_1  = busvoltage_1 + (shuntvoltage_1 / 1000);
-
-    // INA219 #2 readings
-    float shuntvoltage_2 = ina219_2.getShuntVoltage_mV();
-    float busvoltage_2   = ina219_2.getBusVoltage_V();
-    float current_mA_2   = ina219_2.getCurrent_mA();
-    float power_mW_2     = ina219_2.getPower_mW();
-    float loadvoltage_2  = busvoltage_2 + (shuntvoltage_2 / 1000);
-
-    // INA219 #3 readings
-    float shuntvoltage_3 = ina219_3.getShuntVoltage_mV();
-    float busvoltage_3   = ina219_3.getBusVoltage_V();
-    float current_mA_3   = ina219_3.getCurrent_mA();
-    float power_mW_3     = ina219_3.getPower_mW();
-    float loadvoltage_3  = busvoltage_3 + (shuntvoltage_3 / 1000);
-
-    // Print sensor readings
-    Serial.print("INA219_1  => Bus: ");
-    Serial.print(busvoltage_1); Serial.print(" V; Shunt: ");
-    Serial.print(shuntvoltage_1); Serial.print(" mV; Load: ");
-    Serial.print(loadvoltage_1); Serial.print(" V; Current: ");
-    Serial.print(current_mA_1); Serial.print(" mA; Power: ");
-    Serial.print(power_mW_1); Serial.println(" mW");
-
-    Serial.print("INA219_2  => Bus: ");
-    Serial.print(busvoltage_2); Serial.print(" V; Shunt: ");
-    Serial.print(shuntvoltage_2); Serial.print(" mV; Load: ");
-    Serial.print(loadvoltage_2); Serial.print(" V; Current: ");
-    Serial.print(current_mA_2); Serial.print(" mA; Power: ");
-    Serial.print(power_mW_2); Serial.println(" mW");
-
-    Serial.print("INA219_3  => Bus: ");
-    Serial.print(busvoltage_3); Serial.print(" V; Shunt: ");
-    Serial.print(shuntvoltage_3); Serial.print(" mV; Load: ");
-    Serial.print(loadvoltage_3); Serial.print(" V; Current: ");
-    Serial.print(current_mA_3); Serial.print(" mA; Power: ");
-    Serial.print(power_mW_3); Serial.println(" mW");
-
-    // Relay control: if INA219_3's bus voltage is below 11.8V, set relay HIGH.
-    if (busvoltage_3 < 11.8) {
-      digitalWrite(RELAY_PIN, HIGH);
-      Serial.println("INA219_3 voltage < 11.8V: Relay set to HIGH.");
-    } else {
-      digitalWrite(RELAY_PIN, LOW);
-      Serial.println("INA219_3 voltage >= 11.8V: Relay set to LOW.");
+    if (sensor1Available) {
+      float shuntvoltage_1 = ina219_1.getShuntVoltage_mV();
+      float busvoltage_1   = ina219_1.getBusVoltage_V();
+      float current_mA_1   = ina219_1.getCurrent_mA();
+      float power_mW_1     = ina219_1.getPower_mW();
+      float loadvoltage_1  = busvoltage_1 + (shuntvoltage_1 / 1000);
+      
+      Serial.print("INA219_1  => Bus: ");
+      Serial.print(busvoltage_1); Serial.print(" V; Current: ");
+      Serial.print(current_mA_1); Serial.print(" mA; Power: ");
+      Serial.print(power_mW_1); Serial.println(" mW");
     }
+
+    if (sensor2Available) {
+      float shuntvoltage_2 = ina219_2.getShuntVoltage_mV();
+      float busvoltage_2   = ina219_2.getBusVoltage_V();
+      float current_mA_2   = ina219_2.getCurrent_mA();
+      float power_mW_2     = ina219_2.getPower_mW();
+      float loadvoltage_2  = busvoltage_2 + (shuntvoltage_2 / 1000);
+      
+      Serial.print("INA219_2  => Bus: ");
+      Serial.print(busvoltage_2); Serial.print(" V; Current: ");
+      Serial.print(current_mA_2); Serial.print(" mA; Power: ");
+      Serial.print(power_mW_2); Serial.println(" mW");
+    }
+
+    if (sensor3Available) {
+      float shuntvoltage_3 = ina219_3.getShuntVoltage_mV();
+      float busvoltage_3   = ina219_3.getBusVoltage_V();
+      float current_mA_3   = ina219_3.getCurrent_mA();
+      float power_mW_3     = ina219_3.getPower_mW();
+      float loadvoltage_3  = busvoltage_3 + (shuntvoltage_3 / 1000);
+      
+      Serial.print("INA219_3  => Bus: ");
+      Serial.print(busvoltage_3); Serial.print(" V; Current: ");
+      Serial.print(current_mA_3); Serial.print(" mA; Power: ");
+      Serial.print(power_mW_3); Serial.println(" mW");
+
+      // Only control relay if sensor 3 is available
+      if (busvoltage_3 < 11.8) {
+        digitalWrite(RELAY_PIN, HIGH);
+        Serial.println("INA219_3 voltage < 11.8V: Relay set to HIGH.");
+      } else {
+        digitalWrite(RELAY_PIN, LOW);
+        Serial.println("INA219_3 voltage >= 11.8V: Relay set to LOW.");
+      }
+    } else {
+      Serial.println("INA219_3 unavailable: Relay left unchanged.");
+    }
+
     Serial.println();
   }
+
 
   // --- Stepper Motor Control (nonblocking) ---
   // Generate a step pulse for continuous motor movement.
