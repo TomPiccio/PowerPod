@@ -74,8 +74,10 @@ class RentInstructionPageState extends State<RentInstructionPage> {
           .ref('pod_$podNumber/renter_contact_number')
           .set(contactNumber);
 
+      await FirebaseDatabase.instance.ref('pod_$podNumber/to_rent').set(true);
+
       final currentTime = DateTime.now();
-      final returnByTime = currentTime.add(Duration(hours: 24));
+      final returnByTime = currentTime.add(Duration(hours: 3));
 
       // Format to 'yyyy-MM-dd HH:mm:ss'
       final dateFormat = DateFormat('yyyy-MM-dd HH:mm:ss');
@@ -103,6 +105,7 @@ class RentInstructionPageState extends State<RentInstructionPage> {
       await dbRef.child('renter_contact_number').set(null);
       await dbRef.child('return_by').set(null);
       await dbRef.child('renter_user_id').set(null);
+      await dbRef.child('to_rent').set(false);
 
       print("Rental info cleared for pod $podNumber");
     } catch (e) {
@@ -214,21 +217,25 @@ class RentInstructionPageState extends State<RentInstructionPage> {
                                                 spacing: 18,
                                                 children: [
                                                   Container(
-                                                    width: 100,
-                                                    height: 100,
+                                                    width: 200,
+                                                    height: 200,
                                                     decoration: BoxDecoration(
                                                       image: DecorationImage(
                                                         image: AssetImage(
-                                                          'assets/images/power.png',
+                                                          widget.to_rent
+                                                              ? 'assets/images/plug_out.png'
+                                                              : 'assets/images/put_in.png',
                                                         ),
-                                                        fit: BoxFit.cover,
+                                                        fit: BoxFit.contain,
                                                       ),
                                                     ),
                                                   ),
                                                   SizedBox(
                                                     width: 295,
                                                     child: Text(
-                                                      'Scan QR Code',
+                                                      widget.to_rent
+                                                          ? 'Unplug to Rent'
+                                                          : 'Opening up!',
                                                       textAlign:
                                                           TextAlign.center,
                                                       style: TextStyle(
@@ -245,7 +252,9 @@ class RentInstructionPageState extends State<RentInstructionPage> {
                                                   SizedBox(
                                                     width: 295,
                                                     child: Text(
-                                                      'Locate a Power Pod station and scan\nthe QR code using your phone’s camera',
+                                                      widget.to_rent
+                                                          ? 'Please unplug the charging cable.'
+                                                          : 'Kindly place the Pod in its Home!',
                                                       textAlign:
                                                           TextAlign.center,
                                                       style: TextStyle(
@@ -279,21 +288,25 @@ class RentInstructionPageState extends State<RentInstructionPage> {
                                                 spacing: 18,
                                                 children: [
                                                   Container(
-                                                    width: 100,
-                                                    height: 100,
+                                                    width: 200,
+                                                    height: 200,
                                                     decoration: BoxDecoration(
                                                       image: DecorationImage(
                                                         image: AssetImage(
-                                                          'assets/images/flash.png',
+                                                          widget.to_rent
+                                                              ? 'assets/images/take_out.png'
+                                                              : 'assets/images/plugin.png',
                                                         ),
-                                                        fit: BoxFit.cover,
+                                                        fit: BoxFit.contain,
                                                       ),
                                                     ),
                                                   ),
                                                   SizedBox(
                                                     width: 295,
                                                     child: Text(
-                                                      'Scan QR Code',
+                                                      widget.to_rent
+                                                          ? "Here's your Pod!"
+                                                          : "Charge up!",
                                                       textAlign:
                                                           TextAlign.center,
                                                       style: TextStyle(
@@ -310,7 +323,9 @@ class RentInstructionPageState extends State<RentInstructionPage> {
                                                   SizedBox(
                                                     width: 295,
                                                     child: Text(
-                                                      'Locate a Power Pod station and scan\nthe QR code using your phone’s camera',
+                                                      widget.to_rent
+                                                          ? 'Take out the power bank after the door has been lifted!'
+                                                          : 'Please kindly plug the correct charging cable back.',
                                                       textAlign:
                                                           TextAlign.center,
                                                       style: TextStyle(
@@ -344,21 +359,25 @@ class RentInstructionPageState extends State<RentInstructionPage> {
                                                 spacing: 18,
                                                 children: [
                                                   Container(
-                                                    width: 100,
-                                                    height: 100,
+                                                    width: 200,
+                                                    height: 200,
                                                     decoration: BoxDecoration(
                                                       image: DecorationImage(
                                                         image: AssetImage(
-                                                          'assets/images/warning.png',
+                                                          widget.to_rent
+                                                              ? 'assets/images/clock_thumbs_up.png'
+                                                              : 'assets/images/thank-you.png',
                                                         ),
-                                                        fit: BoxFit.cover,
+                                                        fit: BoxFit.contain,
                                                       ),
                                                     ),
                                                   ),
                                                   SizedBox(
                                                     width: 295,
                                                     child: Text(
-                                                      'Scan QR Code',
+                                                      widget.to_rent
+                                                          ? 'Stay Powered!'
+                                                          : 'Pod returned.\nPlanet happy!',
                                                       textAlign:
                                                           TextAlign.center,
                                                       style: TextStyle(
@@ -375,7 +394,9 @@ class RentInstructionPageState extends State<RentInstructionPage> {
                                                   SizedBox(
                                                     width: 295,
                                                     child: Text(
-                                                      'Locate a Power Pod station and scan\nthe QR code using your phone’s camera',
+                                                      widget.to_rent
+                                                          ? 'We’ve got you covered. Please return in 3 hours!'
+                                                          : 'Thanks for taking part of making Earth a better place!',
                                                       textAlign:
                                                           TextAlign.center,
                                                       style: TextStyle(

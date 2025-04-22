@@ -6,6 +6,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:oktoast/oktoast.dart';
 import 'package:power_pod/pages/login.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:power_pod/pages/verification.dart';
 import 'package:power_pod/widgets/logo_header.dart';
 import '../pages/rent.dart';
 import 'package:intl/intl.dart';
@@ -99,6 +100,88 @@ Future<Widget> getReturnTimeRemainingWidget(int rentPodNum) async {
   );
 }
 
+Future<Widget> getPodStatusWidget() async {
+  final refLastUpdated_1 = FirebaseDatabase.instance.ref('pod_1/lastUpdated');
+  final refLastUpdated_2 = FirebaseDatabase.instance.ref('pod_2/lastUpdated');
+  final snapshotLastUpdated1 = await refLastUpdated_1.get();
+  final snapshotLastUpdated2 = await refLastUpdated_2.get();
+
+  if (!snapshotLastUpdated1.exists ||
+      snapshotLastUpdated1.value == null ||
+      !snapshotLastUpdated2.exists ||
+      snapshotLastUpdated2.value == null) {
+    return const Text(
+      'Unknown last updated time',
+      style: TextStyle(color: Colors.white, fontSize: 14, fontFamily: 'Inter'),
+    );
+  }
+
+  DateTime lastUpdated1, lastUpdated2;
+
+  if (snapshotLastUpdated1.value is String) {
+    lastUpdated1 = DateTime.parse(snapshotLastUpdated1.value as String);
+  } else if (snapshotLastUpdated1.value is int) {
+    lastUpdated1 = DateTime.fromMillisecondsSinceEpoch(
+      snapshotLastUpdated1.value as int,
+    );
+  } else {
+    return const Text(
+      'Invalid last updated time for pod 1',
+      style: TextStyle(color: Colors.white, fontSize: 14, fontFamily: 'Inter'),
+    );
+  }
+
+  if (snapshotLastUpdated2.value is String) {
+    lastUpdated2 = DateTime.parse(snapshotLastUpdated2.value as String);
+  } else if (snapshotLastUpdated2.value is int) {
+    lastUpdated2 = DateTime.fromMillisecondsSinceEpoch(
+      snapshotLastUpdated2.value as int,
+    );
+  } else {
+    return const Text(
+      'Invalid last updated time for pod 2',
+      style: TextStyle(color: Colors.white, fontSize: 14, fontFamily: 'Inter'),
+    );
+  }
+
+  // Get the latest of the two last updated times
+  DateTime lastUpdated =
+      lastUpdated1.isAfter(lastUpdated2) ? lastUpdated1 : lastUpdated2;
+
+  final now = DateTime.now();
+  final difference = now.difference(lastUpdated);
+
+  if (difference.inMinutes > 10) {
+    return Row(
+      mainAxisAlignment:
+          MainAxisAlignment.center, // Centers the row content horizontally
+      crossAxisAlignment:
+          CrossAxisAlignment
+              .center, // Ensures that the items are vertically centered
+      children: [
+        Image.asset(
+          'assets/images/warning.png',
+          height: 14, // Adjust the height to match the text size
+          width: 14, // Keep width the same to maintain the aspect ratio
+        ),
+        const SizedBox(width: 8), // Adds space between the icon and the text
+        const Text(
+          'The Power Pod might be offline!',
+          style: TextStyle(
+            color: Colors.red,
+            fontSize: 14,
+            fontFamily: 'Inter',
+          ),
+          overflow: TextOverflow.ellipsis, // Truncates if text overflows
+          maxLines: 1, // Limit text to one line
+        ),
+      ],
+    );
+  }
+
+  return const SizedBox.shrink(); // Return an empty widget if no issue
+}
+
 Future<bool> hasReturnTimePassed(int rentPodNum) async {
   if (rentPodNum > 0) {
     final ref = FirebaseDatabase.instance.ref('pod_$rentPodNum/return_by');
@@ -155,6 +238,20 @@ class _HomeState extends State<Home> {
     for (String podId in podIds) {
       _listenToPodData(podId);
       fetchFirstName();
+    }
+
+    _checkEmailVerification();
+  }
+
+  Future<void> _checkEmailVerification() async {
+    User? user = FirebaseAuth.instance.currentUser;
+
+    if (user != null && !user.emailVerified) {
+      // Navigate to the Verification Page if email is not verified
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => verification()),
+      );
     }
   }
 
@@ -965,6 +1062,27 @@ class _HomeState extends State<Home> {
                                         ),
                                       ),
                                       SizedBox(height: 10),
+                                      FutureBuilder<Widget>(
+                                        future:
+                                            getPodStatusWidget(), // Call the async function here
+                                        builder: (context, snapshot) {
+                                          // Check if the Future has completed
+                                          if (snapshot.connectionState ==
+                                              ConnectionState.waiting) {
+                                            return const CircularProgressIndicator(); // Loading indicator
+                                          } else if (snapshot.hasError) {
+                                            return Text(
+                                              'Error: ${snapshot.error}',
+                                              style: TextStyle(
+                                                color: Colors.red,
+                                              ),
+                                            );
+                                          } else {
+                                            return snapshot.data ??
+                                                SizedBox.shrink(); // Display the result
+                                          }
+                                        },
+                                      ),
                                       /*
                                       Container(
                                         width: double.infinity,

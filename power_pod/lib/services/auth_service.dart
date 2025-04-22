@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:oktoast/oktoast.dart';
+import 'package:power_pod/pages/verification.dart';
 import '../pages/login.dart';
 import '../pages/home.dart';
 
@@ -26,6 +27,23 @@ class AuthService {
             'contact': contact,
             'createdAt': FieldValue.serverTimestamp(),
           });
+      // 🔔 Send email verification
+      if (credential.user != null && !credential.user!.emailVerified) {
+        await credential.user!.sendEmailVerification();
+
+        showToast(
+          'Verification email sent! Please check your inbox.',
+          position: ToastPosition.bottom,
+          backgroundColor: Colors.green,
+          radius: 8,
+          textStyle: TextStyle(color: Colors.white),
+        );
+      }
+
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => verification()),
+      );
 
       await Future.delayed(const Duration(seconds: 1));
       Navigator.pushReplacement(
@@ -34,10 +52,15 @@ class AuthService {
       );
     } on FirebaseAuthException catch (e) {
       String message = '';
-      if (e.code == 'weak-password') {
-        message = 'The password provided is too weak.';
-      } else if (e.code == 'email-already-in-use') {
-        message = 'An account already exists with that email.';
+      switch (e.code) {
+        case 'email-already-in-use':
+          message = "This email is already registered.";
+        case 'weak-password':
+          message = "The password is too weak.";
+        case 'invalid-email':
+          message = "The email address is invalid.";
+        default:
+          message = "Signup failed: ${e.message}";
       }
       showToast(
         message,

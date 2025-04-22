@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:power_pod/pages/rent.dart';
 import 'package:power_pod/pages/signup.dart';
+import 'package:power_pod/pages/verification.dart';
 import 'pages/login.dart';
 import 'pages/home.dart';
 import 'package:firebase_core/firebase_core.dart';

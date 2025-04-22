@@ -80,7 +80,7 @@ class _LoadingPageState extends State<LoadingPage> {
                                 ),
                               ),
                               const SizedBox(height: 16),
-                              if (errorMsg != null)
+                              if (errorMsg != null && errorMsg != "")
                                 Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
